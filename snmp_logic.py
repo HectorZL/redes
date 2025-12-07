@@ -2,44 +2,23 @@ import time
 import subprocess
 import platform
 import re
-import asyncio
+import random
 from threading import Thread
-
-# --- GESTIÓN DE IMPORTACIONES PYSNMP ---
-PYSNMP_AVAILABLE = False
-IS_V7 = False
-try:
-    # Intento v7+ (Asyncio nativo)
-    from pysnmp.hlapi.asyncio import (get_cmd, SnmpEngine, CommunityData, 
-                                      UdpTransportTarget, ContextData, 
-                                      ObjectType, ObjectIdentity)
-    PYSNMP_AVAILABLE = True
-    IS_V7 = True
-except ImportError:
-    try:
-        # Fallback v4/v6 (Sync/Legacy)
-        from pysnmp.hlapi import (getCmd, SnmpEngine, CommunityData, 
-                                       UdpTransportTarget, ContextData, 
-                                       ObjectType, ObjectIdentity)
-        PYSNMP_AVAILABLE = True
-        IS_V7 = False
-    except ImportError as e:
-        print(f"[Logic] Error importando pysnmp: {e}")
 
 class NetworkLogic:
     """
-    Encapsula toda la lógica de monitorización (SNMP y Ping).
+    Encapsula toda la lógica de monitorización (SNMP Mock, RMON Mock y Ping).
     No depende de Tkinter directamente. Usa un callback para logging.
     """
     def __init__(self, log_callback):
-        self.log_callback = log_callback # Función para reportar logs (debe ser thread-safe o manejarlo en GUI)
+        self.log_callback = log_callback
 
     def is_snmp_available(self):
-        return PYSNMP_AVAILABLE
+        return True  # Siempre disponible en modo simulado
 
-    def run_snmp_test(self, ip, community):
-        """Lanza el test SNMP en un hilo aparte."""
-        t = Thread(target=self._execute_snmp_query, args=(ip, community), daemon=True)
+    def run_snmp_test(self, ip, community, num_agents=1):
+        """Lanza el test SNMP simulado en un hilo aparte."""
+        t = Thread(target=self._execute_snmp_mock, args=(ip, community, num_agents), daemon=True)
         t.start()
 
     def run_ping_test(self, ip):
@@ -47,93 +26,82 @@ class NetworkLogic:
         t = Thread(target=self._execute_ping_test, args=(ip,), daemon=True)
         t.start()
 
-    # --- IMPLEMENTACIÓN SNMP ---
-    def _execute_snmp_query(self, ip, community):
+    def run_rmon_test(self, ip, num_agents=1):
+        """Lanza el test RMON simulado en un hilo aparte."""
+        t = Thread(target=self._execute_rmon_mock, args=(ip, num_agents), daemon=True)
+        t.start()
+
+    # --- IMPLEMENTACIÓN SNMP SIMULADO ---
+    def _execute_snmp_mock(self, ip_str, community, num_agents=1):
+        """Simula consulta SNMP con datos mock para demostración académica."""
         try:
-            self.log_callback(f"Iniciando consulta SNMP a {ip}...")
+            self.log_threadsafe(f"Iniciando Monitoreo SNMP a {ip_str}...")
+            self.log_threadsafe(f"NOTA: Datos simulados para {num_agents} agente(s)")
+            self.log_threadsafe("=" * 50)
+            time.sleep(0.5)
+
+            # Generar datos para cada agente
+            for agent_num in range(1, num_agents + 1):
+                self.log_threadsafe(f"\n🖥️  AGENTE #{agent_num} - Dispositivo-{agent_num:02d}")
+                self.log_threadsafe("-" * 40)
+                
+                # Información del sistema
+                device_types = ["Router Cisco", "Switch HP", "Firewall Palo Alto", 
+                               "Access Point Ubiquiti", "Server Linux"]
+                uptime_days = random.randint(1, 365)
+                
+                self.log_threadsafe(f"  Tipo: {random.choice(device_types)}")
+                self.log_threadsafe(f"  Nombre: DEVICE-{agent_num:02d}.local")
+                self.log_threadsafe(f"  Uptime: {uptime_days} días")
+                
+                # Estadísticas de interfaz
+                time.sleep(0.3)
+                self.log_threadsafe("\n  📊 Estadísticas de Interfaz:")
+                
+                speed_mbps = random.choice([100, 1000, 10000])
+                in_octets = random.randint(1000000000, 5000000000)
+                out_octets = random.randint(800000000, 4000000000)
+                in_packets = random.randint(500000, 2000000)
+                out_packets = random.randint(400000, 1800000)
+                in_errors = random.randint(0, 100)
+                out_errors = random.randint(0, 80)
+                
+                self.log_threadsafe(f"    Velocidad: {speed_mbps} Mbps")
+                self.log_threadsafe(f"    IN - Octetos: {in_octets:,} ({in_octets/1e9:.2f} GB)")
+                self.log_threadsafe(f"    OUT - Octetos: {out_octets:,} ({out_octets/1e9:.2f} GB)")
+                self.log_threadsafe(f"    IN - Paquetes: {in_packets:,}")
+                self.log_threadsafe(f"    OUT - Paquetes: {out_packets:,}")
+                self.log_threadsafe(f"    Errores IN/OUT: {in_errors}/{out_errors}")
+                
+                # Cálculos de eficiencia
+                total_data_gb = (in_octets + out_octets) / 1e9
+                util_percent = random.uniform(25.0, 85.0)
+                err_rate = ((in_errors + out_errors) / (in_packets + out_packets)) * 100 if (in_packets + out_packets) > 0 else 0
+                
+                self.log_threadsafe(f"\n  📈 Análisis de Rendimiento:")
+                self.log_threadsafe(f"    Tráfico Total: {total_data_gb:.2f} GB")
+                self.log_threadsafe(f"    Utilización: {util_percent:.1f}%")
+                self.log_threadsafe(f"    Tasa de Error: {err_rate:.4f}%")
+                
+                # Estado de la red
+                status_icon = "✅" if util_percent < 80 and err_rate < 0.1 else "⚠️"
+                status = "ÓPTIMO" if util_percent < 80 and err_rate < 0.1 else "ALERTA"
+                self.log_threadsafe(f"    Estado: {status_icon} {status}")
+                
+                time.sleep(0.3)
             
-            # OIDs
-            oids = {
-                'sysDescr': '1.3.6.1.2.1.1.1.0',
-                'sysUpTime': '1.3.6.1.2.1.1.3.0',
-                'sysName': '1.3.6.1.2.1.1.5.0',
-                'ifSpeed': '1.3.6.1.2.1.2.2.1.5.1',
-                'ifInOctets': '1.3.6.1.2.1.2.2.1.10.1',
-                'ifOutOctets': '1.3.6.1.2.1.2.2.1.16.1',
-                'ifInErrors': '1.3.6.1.2.1.2.2.1.14.1',
-                'ifOutErrors': '1.3.6.1.2.1.2.2.1.20.1',
-                'ifInUcastPkts': '1.3.6.1.2.1.2.2.1.11.1',
-                'ifOutUcastPkts': '1.3.6.1.2.1.2.2.1.17.1'
-            }
-            var_binds = [ObjectType(ObjectIdentity(oid)) for oid in oids.values()]
-
-            # Helpers de obtención de datos
-            async def get_async():
-                snmp_engine = SnmpEngine()
-                return await get_cmd(snmp_engine, CommunityData(community, mpModel=0),
-                                     UdpTransportTarget((ip, 161), timeout=2, retries=2),
-                                     ContextData(), *var_binds)
-
-            def get_sync():
-                return next(getCmd(SnmpEngine(), CommunityData(community, mpModel=0),
-                                   UdpTransportTarget((ip, 161), timeout=2, retries=2),
-                                   ContextData(), *var_binds))
-
-            def fetch():
-                if IS_V7: return asyncio.run(get_async())
-                else: return get_sync()
-
-            # Muestra 1
-            self.log_threadsafe("Tomando Muestra 1...")
-            t1 = time.time()
-            errInd, errStat, errIdx, vb1 = fetch()
-            if errInd or errStat: raise Exception(f"{errInd or errStat}")
+            # Resumen global
+            self.log_threadsafe("\n" + "=" * 50)
+            self.log_threadsafe("📋 RESUMEN GLOBAL SNMP:")
+            self.log_threadsafe(f"  ✓ Agentes monitoreados: {num_agents}")
+            self.log_threadsafe(f"  ✓ Comunidad: {community}")
+            self.log_threadsafe(f"  ✓ Protocolo: SNMPv2c")
+            self.log_threadsafe("=" * 50)
             
-            data1 = {str(v[0]): (int(v[1]) if v[1].isSameTypeWith(ObjectType(ObjectIdentity('1.3.6.1.2.1.2.2.1.10.1'))) else str(v[1])) for v in vb1}
-            self.log_threadsafe(f"Dispositivo: {data1.get(oids['sysName'], 'N/A')}")
-
-            # Espera
-            time.sleep(2)
-
-            # Muestra 2
-            self.log_threadsafe("Tomando Muestra 2...")
-            t2 = time.time()
-            errInd, errStat, errIdx, vb2 = fetch()
-            if errInd or errStat: raise Exception("Error en muestra 2")
-            
-            data2 = {str(v[0]): (int(v[1]) if v[1].isSameTypeWith(ObjectType(ObjectIdentity('1.3.6.1.2.1.2.2.1.10.1'))) else str(v[1])) for v in vb2}
-
-            # Cálculos
-            delta_t = t2 - t1
-            bytes_1 = int(data1[oids['ifInOctets']]) + int(data1[oids['ifOutOctets']])
-            bytes_2 = int(data2[oids['ifInOctets']]) + int(data2[oids['ifOutOctets']])
-            bps = ((bytes_2 - bytes_1) * 8) / delta_t
-            
-            speed = int(data2[oids['ifSpeed']])
-            if speed == 0: speed = 100_000_000
-            
-            util = (bps / speed) * 100
-            
-            # Errores
-            pkts_1 = int(data1[oids['ifInUcastPkts']]) + int(data1[oids['ifOutUcastPkts']])
-            pkts_2 = int(data2[oids['ifInUcastPkts']]) + int(data2[oids['ifOutUcastPkts']])
-            delta_pkts = pkts_2 - pkts_1
-            errs = (int(data2[oids['ifInErrors']]) + int(data2[oids['ifOutErrors']])) - \
-                   (int(data1[oids['ifInErrors']]) + int(data1[oids['ifOutErrors']]))
-            
-            err_rate = (errs / delta_pkts * 100) if delta_pkts > 0 else 0.0
-
-            self.log_threadsafe("-" * 30)
-            self.log_threadsafe(f"RESULTADOS ({delta_t:.1f}s):")
-            self.log_threadsafe(f"Velocidad: {bps/1000:.2f} Kbps")
-            self.log_threadsafe(f"Utilización: {util:.2f}%")
-            self.log_threadsafe(f"Error Rate: {err_rate:.4f}% ({errs} err)")
-            self.log_threadsafe("-" * 30)
-
         except Exception as e:
-            self.log_threadsafe(f"Error SNMP: {e}")
+            self.log_threadsafe(f"Error en simulación SNMP: {e}")
         
-        self.log_threadsafe("FIN SNMP.")
+        self.log_threadsafe("FIN Monitoreo SNMP.\n")
 
     # --- IMPLEMENTACIÓN PING ---
     def _execute_ping_test(self, ip):
@@ -152,11 +120,9 @@ class NetworkLogic:
             
             if proc.returncode == 0:
                 self.log_threadsafe("Ping exitoso.")
-                # Parseo básico
                 loss = re.search(r"(\d+)% (loss|packet loss|perdidos)", out)
                 if loss: self.log_threadsafe(f"Pérdida: {loss.group(1)}%")
                 
-                # Tiempos (Simplificado para buscar 'Media' o 'Average')
                 avg = re.search(r"(Media|Average) = (\d+)ms", out)
                 if avg: self.log_threadsafe(f"Latencia Media: {avg.group(2)}ms")
                 else: self.log_threadsafe("Ver output crudo para latencia.")
@@ -166,7 +132,116 @@ class NetworkLogic:
         except Exception as e:
             self.log_threadsafe(f"Error Ping: {e}")
         
-        self.log_threadsafe("FIN Ping.")
+        self.log_threadsafe("FIN Ping.\n")
+
+    # --- IMPLEMENTACIÓN RMON SIMULADO ---
+    def _execute_rmon_mock(self, ip_str, num_agents=1):
+        """Simula consulta RMON con datos mock para demostración académica."""
+        try:
+            self.log_threadsafe(f"Iniciando Monitoreo RMON a {ip_str}...")
+            self.log_threadsafe(f"NOTA: Datos simulados para {num_agents} agente(s)")
+            self.log_threadsafe("=" * 50)
+            time.sleep(0.5)
+
+            # Datos agregados para todos los agentes
+            total_drop_events = 0
+            total_octets = 0
+            total_pkts = 0
+            total_errors = 0
+            
+            # === RMON Grupo 1: Estadísticas Ethernet (por agente) ===
+            self.log_threadsafe("\n📊 RMON Grupo 1: Estadísticas Ethernet")
+            
+            for agent_num in range(1, num_agents + 1):
+                self.log_threadsafe(f"\n  🖥️  Agente #{agent_num}:")
+                
+                drop_events = random.randint(5, 50)
+                octets = random.randint(500000000, 2000000000)
+                pkts = random.randint(1000000, 5000000)
+                broadcast_pkts = random.randint(10000, 50000)
+                multicast_pkts = random.randint(5000, 25000)
+                crc_errors = random.randint(0, 100)
+                collisions = random.randint(0, 50)
+                
+                total_drop_events += drop_events
+                total_octets += octets
+                total_pkts += pkts
+                total_errors += (crc_errors + collisions)
+                
+                self.log_threadsafe(f"    Eventos de descarte: {drop_events}")
+                self.log_threadsafe(f"    Octetos: {octets:,} bytes ({octets/1e9:.2f} GB)")
+                self.log_threadsafe(f"    Paquetes: {pkts:,}")
+                self.log_threadsafe(f"    Broadcast: {broadcast_pkts:,} | Multicast: {multicast_pkts:,}")
+                self.log_threadsafe(f"    Errores CRC: {crc_errors} | Colisiones: {collisions}")
+                
+                time.sleep(0.3)
+            
+            # === RMON Grupo 2: Historial ===
+            time.sleep(0.5)
+            self.log_threadsafe("\n📈 RMON Grupo 2: Historial de Tráfico")
+            self.log_threadsafe("  Últimas 5 muestras (intervalos de 30s):\n")
+            
+            for i in range(5, 0, -1):
+                sample_octets = random.randint(1000000, 5000000) * num_agents
+                sample_pkts = random.randint(5000, 25000) * num_agents
+                sample_util = random.uniform(15.0, 85.0)
+                timestamp = f"T-{i*30}s"
+                
+                self.log_threadsafe(f"  [{timestamp}] "
+                                   f"Octets: {sample_octets:,}, "
+                                   f"Pkts: {sample_pkts:,}, "
+                                   f"Util: {sample_util:.1f}%")
+            
+            # === RMON Grupo 3: Alarmas ===
+            time.sleep(0.5)
+            self.log_threadsafe("\n⚠️  RMON Grupo 3: Alarmas Configuradas\n")
+            
+            alarm_scenarios = [
+                ("Utilización Alta", "> 80%", random.choice(["Normal", "ALERTA"]), random.uniform(45, 90)),
+                ("Tasa de Errores", "> 1%", random.choice(["Normal", "Normal", "WARNING"]), random.uniform(0.1, 1.5)),
+                ("Paquetes Broadcast", "> 10000/s", "Normal", random.randint(1000, 9000)),
+                ("Colisiones", "> 100/min", random.choice(["Normal", "Normal", "Normal", "WARNING"]), random.randint(10, 150))
+            ]
+            
+            for alarm_name, threshold, status, current_val in alarm_scenarios:
+                status_icon = "✓" if status == "Normal" else "⚠"
+                self.log_threadsafe(f"  {status_icon} {alarm_name}: {status} "
+                                   f"(Umbral: {threshold}, Actual: {current_val:.1f})")
+            
+            # === RMON Grupo 4: Hosts detectados ===
+            time.sleep(0.5)
+            self.log_threadsafe("\n💻 RMON Grupo 4: Top Hosts por Tráfico\n")
+            
+            # Mostrar hasta 5 hosts o num_agents*2, lo que sea menor
+            num_hosts = min(5, num_agents * 2)
+            for i in range(1, num_hosts + 1):
+                mac = f"00:1A:2B:{random.randint(0,255):02X}:{random.randint(0,255):02X}:{random.randint(0,255):02X}"
+                pkts_in = random.randint(10000, 100000)
+                pkts_out = random.randint(10000, 100000)
+                octets_total = random.randint(50000000, 500000000)
+                
+                self.log_threadsafe(f"  Host {i} (MAC: {mac})")
+                self.log_threadsafe(f"    Pkts IN: {pkts_in:,}, OUT: {pkts_out:,}")
+                self.log_threadsafe(f"    Tráfico: {octets_total/1e6:.2f} MB")
+            
+            # === Resumen Final ===
+            time.sleep(0.3)
+            self.log_threadsafe("\n" + "=" * 50)
+            self.log_threadsafe("📋 RESUMEN GLOBAL RMON:")
+            efficiency = 100 - ((total_drop_events + total_errors) / total_pkts * 100)
+            self.log_threadsafe(f"  ✓ Agentes monitoreados: {num_agents}")
+            self.log_threadsafe(f"  ✓ Eficiencia de red: {efficiency:.2f}%")
+            self.log_threadsafe(f"  ✓ Paquetes procesados: {total_pkts:,}")
+            self.log_threadsafe(f"  ✓ Volumen total: {total_octets/1e9:.2f} GB")
+            
+            active_alarms = sum(1 for _, _, status, _ in alarm_scenarios if status != "Normal")
+            self.log_threadsafe(f"  ⚠  Alarmas activas: {active_alarms}/4")
+            self.log_threadsafe("=" * 50)
+            
+        except Exception as e:
+            self.log_threadsafe(f"Error en simulación RMON: {e}")
+        
+        self.log_threadsafe("FIN Monitoreo RMON.\n")
 
     def log_threadsafe(self, msg):
         """Helper para enviar al callback."""

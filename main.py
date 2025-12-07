@@ -4,8 +4,8 @@ from gui import NetworkMonitorGUI
 from agent_manager import SNMPAgentManager
 
 def main():
-    # 1. Iniciar el Agente SNMP en segundo plano
-    agent = SNMPAgentManager(port=161)
+    # 1. Iniciar el Agente SNMP en segundo plano (Puerto 16161 para evitar admin)
+    agent = SNMPAgentManager(port=16161)
     if agent.start_agent():
         print("Agente SNMP iniciado correctamente.")
     else:
