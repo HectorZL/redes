@@ -1,0 +1,127 @@
+{
+  "timestamp": "2025-12-06T20:48:23.289801",
+  "protocol": "RMON",
+  "num_agents": 2,
+  "data": {
+    "timestamp": "2025-12-06T20:47:59.962628",
+    "num_agents": 2,
+    "agents": [
+      {
+        "Agent": "Agent-1",
+        "Drop_Events": 48,
+        "Octets": 1304072570,
+        "Packets": 2511312,
+        "Broadcast_Pkts": 15974,
+        "Multicast_Pkts": 24963,
+        "CRC_Errors": 17,
+        "Collisions": 35,
+        "Fragments": 20
+      },
+      {
+        "Agent": "Agent-2",
+        "Drop_Events": 35,
+        "Octets": 519103786,
+        "Packets": 4644649,
+        "Broadcast_Pkts": 31397,
+        "Multicast_Pkts": 5217,
+        "CRC_Errors": 53,
+        "Collisions": 41,
+        "Fragments": 18
+      }
+    ],
+    "history": [
+      {
+        "timestamp": "T-150s",
+        "octets": 8287148,
+        "packets": 49184,
+        "utilization": 68.5
+      },
+      {
+        "timestamp": "T-120s",
+        "octets": 5473258,
+        "packets": 43838,
+        "utilization": 65.9
+      },
+      {
+        "timestamp": "T-90s",
+        "octets": 7272564,
+        "packets": 46110,
+        "utilization": 80.4
+      },
+      {
+        "timestamp": "T-60s",
+        "octets": 5621020,
+        "packets": 41456,
+        "utilization": 36.3
+      },
+      {
+        "timestamp": "T-30s",
+        "octets": 2701334,
+        "packets": 39428,
+        "utilization": 82.7
+      }
+    ],
+    "alarms": [
+      {
+        "Alarm_Name": "Utilización Alta",
+        "Threshold": "> 80.0%",
+        "Status": "Normal",
+        "Current_Value": 68.95
+      },
+      {
+        "Alarm_Name": "Tasa de Errores",
+        "Threshold": "> 1.0%",
+        "Status": "Normal",
+        "Current_Value": 0.41
+      },
+      {
+        "Alarm_Name": "Paquetes Broadcast",
+        "Threshold": "> 10000/s",
+        "Status": "Normal",
+        "Current_Value": 7850
+      },
+      {
+        "Alarm_Name": "Colisiones",
+        "Threshold": "> 100/min",
+        "Status": "WARNING",
+        "Current_Value": 81
+      }
+    ],
+    "hosts": [
+      {
+        "Host": 1,
+        "MAC": "00:1A:2B:DC:B5:A6",
+        "Pkts_IN": 52284,
+        "Pkts_OUT": 59603,
+        "Traffic_MB": 494.07
+      },
+      {
+        "Host": 2,
+        "MAC": "00:1A:2B:EA:BE:25",
+        "Pkts_IN": 80298,
+        "Pkts_OUT": 53130,
+        "Traffic_MB": 460.5
+      },
+      {
+        "Host": 3,
+        "MAC": "00:1A:2B:8E:E7:9D",
+        "Pkts_IN": 24990,
+        "Pkts_OUT": 99494,
+        "Traffic_MB": 470.68
+      },
+      {
+        "Host": 4,
+        "MAC": "00:1A:2B:75:93:74",
+        "Pkts_IN": 70421,
+        "Pkts_OUT": 84290,
+        "Traffic_MB": 317.15
+      }
+    ],
+    "summary": {
+      "efficiency": 100.0,
+      "total_packets": 7155961,
+      "total_volume_gb": 1.82,
+      "active_alarms": 1
+    }
+  }
+}

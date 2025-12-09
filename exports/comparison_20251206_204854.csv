@@ -1,0 +1,16 @@
+Característica,SNMP,RMON
+Objetivo Principal,Gestión de dispositivos individuales,Monitoreo de segmentos de red
+Alcance,Nivel de dispositivo,Nivel de red/segmento
+Agente Requerido,Sí (en cada dispositivo),Sí (puede ser dedicado)
+Grupos MIB,11 grupos (RFC 1213),9 grupos + RMON2 (RFC 2819)
+Estadísticas,Básicas por interfaz,Avanzadas con historial
+Historial,No nativo,"Sí, con timestamps"
+Alarmas,Traps básicos,Sistema completo de alarmas
+Análisis de Hosts,No,Sí (Top N hosts)
+Tráfico por Protocolo,Limitado,Detallado
+Consumo de Recursos,Bajo,Medio-Alto
+Complejidad,Baja,Media-Alta
+Mejor Para,"Monitoreo básico, gestión","Análisis profundo, troubleshooting"
+RFC Principal,"RFC 1157, 3416","RFC 2819, 4502"
+Overhead de Red,Bajo,Medio
+Tiempo Real,Sí,Sí

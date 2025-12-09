@@ -1,0 +1,51 @@
+{
+  "timestamp": "2025-12-06T20:48:23.286553",
+  "protocol": "SNMP",
+  "num_agents": 2,
+  "agents": [
+    {
+      "Agent": "Agent-1",
+      "Device_Type": "Switch HP",
+      "Device_Name": "DEVICE-01.local",
+      "Uptime_Days": 30,
+      "Speed_Mbps": 1000,
+      "IN_Octets": 1957918973,
+      "OUT_Octets": 1938357153,
+      "IN_Packets": 1266953,
+      "OUT_Packets": 1496879,
+      "IN_Errors": 34,
+      "OUT_Errors": 16,
+      "Total_Data_GB": 3.9,
+      "Utilization_%": 82.44,
+      "Error_Rate_%": 0.0018,
+      "Status": "ALERTA",
+      "timestamp": "2025-12-06T20:47:56.316919"
+    },
+    {
+      "Agent": "Agent-2",
+      "Device_Type": "Firewall Palo Alto",
+      "Device_Name": "DEVICE-02.local",
+      "Uptime_Days": 285,
+      "Speed_Mbps": 100,
+      "IN_Octets": 3607461477,
+      "OUT_Octets": 860996708,
+      "IN_Packets": 1426765,
+      "OUT_Packets": 1610020,
+      "IN_Errors": 36,
+      "OUT_Errors": 28,
+      "Total_Data_GB": 4.47,
+      "Utilization_%": 31.88,
+      "Error_Rate_%": 0.0021,
+      "Status": "ÓPTIMO",
+      "timestamp": "2025-12-06T20:47:56.316919"
+    }
+  ],
+  "summary": {
+    "total_data_gb": 8.364734311,
+    "total_packets": 5800617,
+    "total_errors": 114,
+    "average_utilization": 57.16,
+    "agents_optimal": 1,
+    "agents_alert": 1
+  }
+}
